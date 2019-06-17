@@ -12,22 +12,23 @@ class Pixel:
         self.__pixels[0] = (0,0,0)
         self.__pixels.write()
 
-    def white(self):
-        self.__pixels[0] = (128,128,128)
+    def white(self, intensity=128):
+        self.__pixels[0] = (intensity,intensity,intensity)
         self.__pixels.write()
 
-    def red(self):
-        self.__pixels[0] = (128,0,0)
+    def red(self, intensity=128):
+        self.__pixels[0] = (intensity,0,0)
         self.__pixels.write()
 
-    def green(self):
-        self.__pixels[0] = (0,128,0)
+    def green(self, intensity=128):
+        self.__pixels[0] = (0,intensity,0)
         self.__pixels.write()
 
-    def blue(self):
-        self.__pixels[0] = (0,0,128)
+    def blue(self, intensity=128):
+        self.__pixels[0] = (0,0,intensity)
         self.__pixels.write()
 
+    # color: Tuple (R,G,B)
     def color(self, color):
         self.__pixels[0] = color
         self.__pixels.write()

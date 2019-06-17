@@ -33,7 +33,7 @@ def iss_overhead():
             print("The ISS is over the USA right now.")
 
         if not is_overhead:
-            pixel.red()
+            pixel.red(32)
             print("The ISS is NOT overhead right now.")
             print("https://www.google.com/maps/search/%f,+%f/@%f,%f,4z" % (iss[0], iss[1], iss[0] ,iss[1]))
 
@@ -41,17 +41,22 @@ def iss_overhead():
 
 # ------------------------------------------------------------------------------
 def pixel_test():
-    pixel.white()
-    utime.sleep(1)
+    while True:
+        pixel.white()
+        print("White")
+        utime.sleep(1)
 
-    pixel.red()
-    utime.sleep(1)
+        pixel.red()
+        print("Red")
+        utime.sleep(1)
 
-    pixel.blue()
-    utime.sleep(1)
+        pixel.blue()
+        print("Blue")
+        utime.sleep(1)
 
-    pixel.green()
-    utime.sleep(1)
+        pixel.green()
+        print("Green")
+        utime.sleep(1)
 
 # ------------------------------------------------------------------------------
 if __name__ == "__main__":
@@ -63,4 +68,4 @@ if __name__ == "__main__":
     nc = GPSArea.from_file("./nc.coords", reverse=True)
     usa = GPSArea.from_file("./usa.coords", reverse=True)
 
-    pixel_test()
+    iss_overhead()

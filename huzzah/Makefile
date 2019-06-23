@@ -8,3 +8,6 @@ install:
 
 boot: boot.py
 	ampy --port /dev/ttyUSB0 put boot.py
+
+main: main.py
+	ampy --port /dev/ttyUSB0 put main.py

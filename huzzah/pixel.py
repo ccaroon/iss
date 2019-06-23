@@ -32,3 +32,24 @@ class Pixel:
     def color(self, color):
         self.__pixels[0] = color
         self.__pixels.write()
+
+    @classmethod
+    def test(cls, pin_num = 15, delay = 1):
+        pixel = Pixel(pin_num)
+
+        while True:
+            pixel.white()
+            print("White")
+            utime.sleep(delay)
+
+            pixel.red()
+            print("Red")
+            utime.sleep(delay)
+
+            pixel.blue()
+            print("Blue")
+            utime.sleep(delay)
+
+            pixel.green()
+            print("Green")
+            utime.sleep(delay)

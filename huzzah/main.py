@@ -33,7 +33,7 @@ def iss_overhead(pixel, places):
             print("The ISS is NOT overhead right now.")
             print("https://www.google.com/maps/search/%f,+%f/@%f,%f,4z" % (iss[0], iss[1], iss[0] ,iss[1]))
 
-        utime.sleep(10)
+        utime.sleep(7)
 
 # ------------------------------------------------------------------------------
 if __name__ == "__main__":
@@ -46,7 +46,7 @@ if __name__ == "__main__":
 
     # List of places should be largest to smallest area size-wise in the list
     iss_overhead(pixel, (
-        {'name': "The USA",        'color': (128,128,128), 'area': durham},
+        {'name': "The USA",        'color': (128,128,128), 'area': usa},
         {'name': "North Carolina", 'color': (0,0,128),     'area': nc},
         {'name': "Durham",         'color': (0,128,0),     'area': durham}
     ))

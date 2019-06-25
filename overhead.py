@@ -35,11 +35,12 @@ def iss_overhead(places):
         if curr_place:
             msg = "The ISS is over %s right now." % (curr_place['name'])
             notify("ISS", msg)
+            print("https://www.google.com/maps/search/%f,+%f/@%f,%f,4z" % (iss[0], iss[1], iss[0] ,iss[1]))
         else:
             print("The ISS is NOT overhead right now.")
             print("https://www.google.com/maps/search/%f,+%f/@%f,%f,4z" % (iss[0], iss[1], iss[0] ,iss[1]))
 
-        time.sleep(15)
+        time.sleep(7)
 
 # ------------------------------------------------------------------------------
 if __name__ == "__main__":
@@ -49,7 +50,7 @@ if __name__ == "__main__":
 
     # List of places should be largest to smallest area size-wise in the list
     iss_overhead((
-        {'name': "The USA",        'area': durham},
+        {'name': "The USA",        'area': usa},
         {'name': "North Carolina", 'area': nc},
         {'name': "Durham",         'area': durham}
     ))

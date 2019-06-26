@@ -14,7 +14,6 @@ def iss_overhead(pixel, places):
             data = resp.json()
             iss = (float(data['iss_position']['latitude']), float(data['iss_position']['longitude']))
         else:
-            pixel.off()
             raise Exception("Error Getting ISS Location: %s" % (resp.status_code))
 
         # Check list of places
@@ -29,11 +28,11 @@ def iss_overhead(pixel, places):
             pixel.color(curr_place['color'])
             print("The ISS is over %s right now." % (curr_place['name']))
         else:
-            pixel.red(32)
+            pixel.blink((16,0,0), count=3)
             print("The ISS is NOT overhead right now.")
             print("https://www.google.com/maps/search/%f,+%f/@%f,%f,4z" % (iss[0], iss[1], iss[0] ,iss[1]))
 
-        utime.sleep(7)
+        utime.sleep(6)
 
 # ------------------------------------------------------------------------------
 if __name__ == "__main__":
@@ -44,9 +43,20 @@ if __name__ == "__main__":
     nc     = GPSArea.from_file("./nc.coords", reverse=True)
     usa    = GPSArea.from_file("./usa.coords", reverse=True)
 
-    # List of places should be largest to smallest area size-wise in the list
-    iss_overhead(pixel, (
-        {'name': "The USA",        'color': (128,128,128), 'area': usa},
-        {'name': "North Carolina", 'color': (0,0,128),     'area': nc},
-        {'name': "Durham",         'color': (0,128,0),     'area': durham}
-    ))
+    try:
+        # List of places should be largest to smallest area size-wise in the list
+        iss_overhead(pixel, (
+            {'name': "The USA",        'color': (128,128,128), 'area': usa},
+            {'name': "North Carolina", 'color': (0,0,128),     'area': nc},
+            {'name': "Durham",         'color': (0,128,0),     'area': durham}
+        ))
+    except Exception as e:
+        print("Error: %s" % (e))
+        pixel.color(64,0,0)
+        
+
+
+
+
+
+# 

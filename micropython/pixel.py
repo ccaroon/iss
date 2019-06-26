@@ -1,3 +1,5 @@
+import utime
+
 from neopixel import NeoPixel
 from machine import Pin
 
@@ -32,6 +34,13 @@ class Pixel:
     def color(self, color):
         self.__pixels[0] = color
         self.__pixels.write()
+
+    def blink(self, color, count=5, interval=250):
+        for i in range(0,count):
+            self.color(color)
+            utime.sleep_ms(interval)
+            self.off()
+            utime.sleep_ms(interval)
 
     @classmethod
     def test(cls, pin_num = 15, delay = 1):

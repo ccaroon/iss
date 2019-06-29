@@ -23,3 +23,6 @@ data:
 	ampy --port $(PORT) put ../data/durham.coords
 	ampy --port $(PORT) put ../data/nc.coords
 	ampy --port $(PORT) put ../data/usa.coords
+
+log:
+	ampy --port $(PORT) get iss.log

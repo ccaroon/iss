@@ -1,6 +1,6 @@
 MAC_PORT = "/dev/tty.SLAB_USBtoUART"
 LNX_PORT = "/dev/ttyUSB0"
-PORT = $(MAC_PORT)
+PORT = $(LNX_PORT)
 
 test:
 	echo $(PORT)
@@ -23,6 +23,9 @@ data:
 	ampy --port $(PORT) put ../data/durham.coords
 	ampy --port $(PORT) put ../data/nc.coords
 	ampy --port $(PORT) put ../data/usa.coords
+
+shell:
+	picocom $(PORT) -b115200
 
 log:
 	ampy --port $(PORT) get iss.log

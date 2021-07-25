@@ -16,7 +16,18 @@ print(light.on())
 print(light.color())
 
 light.color((255,0,0))
+print(light.color())
 time.sleep(1)
+
 light.color((0,255,0))
+print(light.color())
 time.sleep(1)
+
 light.color((0,0,255))
+print(light.color())
+time.sleep(1)
+
+light.reset()
+
+print(light.on())
+print(light.color())

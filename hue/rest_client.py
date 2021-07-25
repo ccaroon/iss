@@ -24,20 +24,20 @@ class RestClient:
         return RestClient.__Instance(api, config)
 
     @classmethod
-    def error(cls, response, err_field='error', fields=('message'), as_exception=True):
+    def error(cls, response, as_exception=True):
         """Parse out the error message from the given response if any"""
 
-        error_msg = None
-        if response.ok == False:
-            err_data = response.json().get(err_field)
+        data = response.json()
+        for result in data:
+            error_msg = None
+            if 'error' in result:
+                error = result['error']
+                print(result)
+                error_msg = F"Status Code: [{response.status_code}] | Reason: [{response.reason}]"
+                error_msg += F" | Description: [{error.get('description', '?????')}]"
 
-            error_msg = F"Status Code: [{response.status_code}] | Reason: [{response.reason}]"
-            for fld in fields:
-                if fld in err_data:
-                    error_msg += F" | {fld.capitalize()}: [{err_data.get(fld, '?????')}]"
-
-            if as_exception:
-                raise Exception(error_msg)
+                if as_exception:
+                    raise Exception(error_msg)
 
         return (error_msg)
 

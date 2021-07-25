@@ -1,37 +1,40 @@
-import requests
-
+from rest_client import RestClient
 from rgbxy import Converter, GamutC
 
 class HueLight:
     BRIDGE_HOST  = None
     BRIDGE_TOKEN = None
-    END_POINT    = None
     CONVERTER    = Converter(GamutC)
+    REST_CLIENT  = None
 
     def __init__(self, id, data={}):
-        if not self.END_POINT:
+        if not self.REST_CLIENT:
             raise Exception("HueLights must first be initialized!")
         else:
             self.id   = id
             self.data = data
-            self.initial_state = data.get('state', {'on': False})
+            self.initial_state = data.get('state', {'on': False}).copy()
+            # fields that are not modifyable
+            for fld in ('colormode', 'effect', 'alert', 'mode', 'reachable'):
+                del self.initial_state[fld]
 
     @classmethod
     def init(cls, host, token):
         cls.BRIDGE_HOST  = host
         cls.BRIDGE_TOKEN = token
-        cls.END_POINT = F"http://{cls.BRIDGE_HOST}/api/{cls.BRIDGE_TOKEN}"
+
+        cls.REST_CLIENT = RestClient(F'/api/{cls.BRIDGE_TOKEN}', {
+            'host': cls.BRIDGE_HOST
+        })
 
     @classmethod
     def get_by_name(cls, name):
         light = None
 
-        resp = requests.get(F"{cls.END_POINT}/lights")
-        if resp.ok:
-            lights = resp.json()
-        else:
-            raise Exception(resp.text)
+        resp = cls.REST_CLIENT.get('/lights')
+        RestClient.error(resp)
 
+        lights = resp.json()
         for id, data in lights.items():
             if data['name'] == name:
                 light = HueLight(id, data)
@@ -42,34 +45,47 @@ class HueLight:
     def name(self):
         return self.data['name']
 
+    def reload(self):
+        pass
+
     def reset(self):
         """ Reset the light to it's inital state """
-        # TODO: use self.initial_state
-        pass
+        resp = self.REST_CLIENT.put(F"/lights/{self.id}/state", self.initial_state)
+        RestClient.error(resp)
+        self.data['state'] = self.initial_state
 
     def color(self, rgb = None):
         """ Get/Set Color """
         if rgb:
-            xy = CONVERTER.rgb_to_xy(rgb[0], rgb[1], rgb[2])
-            resp = requests.put(F"{self.END_POINT}/lights/{self.id}/state", json={
+            xy = self.CONVERTER.rgb_to_xy(rgb[0], rgb[1], rgb[2])
+            resp = self.REST_CLIENT.put(F"/lights/{self.id}/state", {
                 'xy': xy
             })
-            if resp.ok:
-                data = resp.json()[0]
-                if data.get('error', None):
-                    # print(data['error'])
-                    raise Exception(data['error']['description'])
-                else:
-                    pass
-            else:
-                raise Exception(resp.text)
+
+            RestClient.error(resp)
+            self.data['state']['xy'] = xy
         else:
             xy = self.data['state']['xy']
-            return (CONVERTER.xy_to_rgb(xy[0], xy[1]))
+            return (self.CONVERTER.xy_to_rgb(xy[0], xy[1]))
 
     def on(self, value=None):
         """ Get/Set Current ON state """
         if value:
-            pass
+            resp = self.REST_CLIENT.put(F"/lights/{self.id}/state", {
+                'on': value
+            })
+
+            RestClient.error(resp)
+            self.data['state']['on'] = value
         else:
             return self.data['state']['on']
+
+
+
+
+
+
+
+
+
+#

@@ -1,56 +1,31 @@
+import time
 from lib.rest_client import RestClient
 from rgbxy import Converter, GamutC
 
 class HueLight:
-    BRIDGE_HOST  = None
-    BRIDGE_TOKEN = None
-    CONVERTER    = Converter(GamutC)
-    REST_CLIENT  = None
+    CONVERTER = Converter(GamutC)
 
-    def __init__(self, id, data={}):
-        if not self.REST_CLIENT:
-            raise Exception("HueLights must first be initialized!")
-        else:
-            self.id   = id
-            self.data = data
-            self.initial_state = data.get('state', {'on': False}).copy()
-            # fields that are not modifyable
-            for fld in ('colormode', 'effect', 'alert', 'mode', 'reachable'):
-                del self.initial_state[fld]
+    def __init__(self, bridge, id, data={}):
+        self.bridge = bridge
+        self.__client = bridge.client
 
-    @classmethod
-    def init(cls, host, token):
-        cls.BRIDGE_HOST  = host
-        cls.BRIDGE_TOKEN = token
-
-        cls.REST_CLIENT = RestClient(F'/api/{cls.BRIDGE_TOKEN}', {
-            'host': cls.BRIDGE_HOST
-        })
-
-    @classmethod
-    def get_by_name(cls, name):
-        light = None
-
-        resp = cls.REST_CLIENT.get('/lights')
-        RestClient.error(resp)
-
-        lights = resp.json()
-        for id, data in lights.items():
-            if data['name'] == name:
-                light = HueLight(id, data)
-                break
-
-        return light
+        self.id   = id
+        self.data = data
+        self.initial_state = data.get('state', {'on': False}).copy()
+        # fields that are not modifyable
+        for fld in ('colormode', 'effect', 'alert', 'mode', 'reachable'):
+            del self.initial_state[fld]
 
     def name(self):
         return self.data['name']
 
+    # TODO: reload the lights state
     def reload(self):
         pass
 
     def reset(self):
         """ Reset the light to it's inital state """
-        resp = self.REST_CLIENT.put(F"/lights/{self.id}/state", self.initial_state)
+        resp = self.__client.put(F"/lights/{self.id}/state", self.initial_state)
         RestClient.error(resp)
         self.data['state'] = self.initial_state
 
@@ -58,7 +33,7 @@ class HueLight:
         """ Get/Set Color """
         if rgb:
             xy = self.CONVERTER.rgb_to_xy(rgb[0], rgb[1], rgb[2])
-            resp = self.REST_CLIENT.put(F"/lights/{self.id}/state", {
+            resp = self.__client.put(F"/lights/{self.id}/state", {
                 'xy': xy
             })
 
@@ -70,8 +45,8 @@ class HueLight:
 
     def on(self, value=None):
         """ Get/Set Current ON state """
-        if value:
-            resp = self.REST_CLIENT.put(F"/lights/{self.id}/state", {
+        if value in (True, False):
+            resp = self.__client.put(F"/lights/{self.id}/state", {
                 'on': value
             })
 
@@ -80,6 +55,17 @@ class HueLight:
         else:
             return self.data['state']['on']
 
+    def blink(self, color, count=3):
+        self.on(True)
+        self.color(color)
+
+        for i in range(0, count):
+            self.on(False)
+            time.sleep(0.5)
+            self.on(True)
+            time.sleep(0.5)
+
+        self.reset()
 
 
 

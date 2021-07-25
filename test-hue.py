@@ -2,15 +2,16 @@
 import time
 import yaml
 
-from hue_light import HueLight
+from lib.hue_bridge import HueBridge
 
 config = None
 with open('.secrets.yml', 'r') as secrets:
     config = yaml.safe_load(secrets)
 
-HueLight.init(config['host'], config['token'])
-light = HueLight.get_by_name('Couch Light')
+hue = HueBridge(config['host'], config['token'])
+light = hue.get_light('Couch Light')
 
+# light.on(False)
 print(light.name())
 print(light.on())
 print(light.color())

@@ -1,17 +1,21 @@
 #!/usr/bin/env python
 import time
+# TODO: update to use rest_client
 import requests
 import yaml
 
-from lib.hue_light import HueLight
+from lib.hue_bridge import HueBridge
 from lib.gps_area import GPSArea
-
+# ------------------------------------------------------------------------------
+PRINT=True
 LOG_FILE = "iss.log"
+# ------------------------------------------------------------------------------
 def log(msg):
-    print(msg)
+    if PRINT:
+        print(msg)
+
     with open(LOG_FILE, "a") as file:
         file.write("%d - %s\n" % (time.time(), msg))
-
 # ------------------------------------------------------------------------------
 def iss_overhead(hue_light, places):
     being_controlled = False
@@ -34,7 +38,7 @@ def iss_overhead(hue_light, places):
             if curr_place:
                 being_controlled = True
                 light.color(curr_place['color'])
-                loge("The ISS is over %s right now." % (curr_place['name']))
+                log("The ISS is over %s right now." % (curr_place['name']))
             else:
                 # if we control light, then reset to original state/color
                 if being_controlled:
@@ -57,8 +61,10 @@ if __name__ == "__main__":
     with open('.secrets.yml', 'r') as secrets:
         config = yaml.safe_load(secrets)
 
-    HueLight.init(config['host'], config['token'])
-    light = HueLight.get_by_name('Couch Light')
+    hue = HueBridge(config['host'], config['token'])
+    light = hue.get_light('Couch Light')
+
+    light.blink((0,255,255), count=2)
 
     durham = GPSArea.from_file("./data/durham.coords", reverse=True)
     nc     = GPSArea.from_file("./data/nc.coords", reverse=True)

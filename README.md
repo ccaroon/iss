@@ -14,6 +14,9 @@ Uses a python script written for micro-python running on an AdaFruit Feather Huz
 * Getting Started: https://developers.meethue.com/develop/get-started-2/
 * Dev Tool/Debugger: http://<bridge_addr>/debug/clip.html
 
+#### Other Reqs
+* https://github.com/benknight/hue-python-rgb-converter
+
 #### Get Username for App
 1. Push link button
 2. POST /api `{"devicetype":"app_name#device"}`

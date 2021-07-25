@@ -1,4 +1,4 @@
-from rest_client import RestClient
+from lib.rest_client import RestClient
 from rgbxy import Converter, GamutC
 
 class HueLight:

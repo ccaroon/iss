@@ -8,7 +8,7 @@ class HueBridge:
         self.client = RestClient(F'/api/{token}', {
             'host': host
         })
-        self.client.debug(True)
+        # self.client.debug(True)
 
     def get_light(self, name):
         light = None

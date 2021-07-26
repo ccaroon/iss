@@ -31,7 +31,11 @@ class HueLight:
 
     def color(self, rgb = None):
         """ Get/Set Color """
+
         if rgb:
+            if not self.on():
+                self.on(True)
+
             xy = self.CONVERTER.rgb_to_xy(rgb[0], rgb[1], rgb[2])
             resp = self.__client.put(F"/lights/{self.id}/state", {
                 'xy': xy

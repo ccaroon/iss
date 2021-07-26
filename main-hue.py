@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import time
+import random
 # TODO: update to use rest_client
 import requests
 import yaml
@@ -17,8 +18,11 @@ def log(msg):
     with open(LOG_FILE, "a") as file:
         file.write("%d - %s\n" % (time.time(), msg))
 # ------------------------------------------------------------------------------
-def iss_overhead(hue_light, places):
+def iss_overhead(hue_light, places, simulate=False):
     being_controlled = False
+    # For simulate
+    all_places = list(places)
+    all_places.append(None)
 
     while (True):
         log("-------------------------")
@@ -29,10 +33,13 @@ def iss_overhead(hue_light, places):
             iss = (float(data['iss_position']['latitude']), float(data['iss_position']['longitude']))
             # Check list of places
             curr_place = None
-            for place in places:
-                log("Checking '%s' [%s]" % (place['name'], place['color']))
-                if place['area'].contains(iss):
-                    curr_place = place
+            if simulate:
+                curr_place = random.choice(all_places)
+            else:
+                for place in places:
+                    log("Checking '%s' [%s]" % (place['name'], place['color']))
+                    if place['area'].contains(iss):
+                        curr_place = place
 
             # Report results
             if curr_place:
@@ -51,7 +58,7 @@ def iss_overhead(hue_light, places):
             log("Error Getting ISS Location: %s" % (resp.status_code))
 
         log("-------------------------")
-        time.sleep(15)
+        time.sleep(10)
 
 # ------------------------------------------------------------------------------
 if __name__ == "__main__":
@@ -64,7 +71,7 @@ if __name__ == "__main__":
     hue = HueBridge(config['host'], config['token'])
     light = hue.get_light('Couch Light')
 
-    light.blink((0,255,255), count=2)
+    # light.blink((0,255,255), count=2)
 
     durham = GPSArea.from_file("./data/durham.coords", reverse=True)
     nc     = GPSArea.from_file("./data/nc.coords", reverse=True)
@@ -74,9 +81,9 @@ if __name__ == "__main__":
         # List of places should be largest to smallest area size-wise in the list
         iss_overhead(light, (
             {'name': "The USA",        'color': (128,128,128), 'area': usa},
-            {'name': "North Carolina", 'color': (0,0,128),     'area': nc},
-            {'name': "Durham",         'color': (0,128,0),     'area': durham}
-        ))
+            {'name': "North Carolina", 'color': (0,0,255),     'area': nc},
+            {'name': "Durham",         'color': (0,255,0),     'area': durham}
+        ), simulate=False)
     except Exception as e:
         log("Error: %s" % (e))
         light.color((255,0,0))

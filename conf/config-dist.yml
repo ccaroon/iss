@@ -1,4 +1,4 @@
+# Copy to $HOME/.config/iss-hue.yml and set the values below
 ---
 host: http://<HUB_BRIDGE_HOST>
 token: 0xdeadbeef
-

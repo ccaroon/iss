@@ -11,17 +11,25 @@ class HueLight:
 
         self.id   = id
         self.data = data
-        self.initial_state = data.get('state', {'on': False}).copy()
+        self.__set_initial_state()
+
+    def __set_initial_state(self):
+        self.initial_state = self.data.get('state', {'on': False}).copy()
         # fields that are not modifyable
         for fld in ('colormode', 'effect', 'alert', 'mode', 'reachable'):
-            del self.initial_state[fld]
+            if fld in self.initial_state:
+                del self.initial_state[fld]
 
     def name(self):
         return self.data['name']
 
-    # TODO: reload the lights state
     def reload(self):
-        pass
+        """ Reload the lights state """
+        resp = self.__client.get(F"/lights/{self.id}")
+        RestClient.error(resp)
+
+        self.data = resp.json()
+        self.__set_initial_state()
 
     def reset(self):
         """ Reset the light to it's inital state """
@@ -47,6 +55,21 @@ class HueLight:
             xy = self.data['state']['xy']
             return (self.CONVERTER.xy_to_rgb(xy[0], xy[1]))
 
+    # percent: 0 to 100
+    def brightness(self, percent:int=None):
+        """ Get/Set Brightness """
+        if percent is not None:
+            # translate percent to value between 0 & 254
+            bri_value = int(254 * (percent/100))
+            resp = self.__client.put(F"/lights/{self.id}/state", {
+                'bri': bri_value
+            })
+
+            RestClient.error(resp)
+            self.data['state']['bri'] = bri_value
+        else:
+            return self.data['state']['bri']
+
     def on(self, value=None):
         """ Get/Set Current ON state """
         if value in (True, False):
@@ -70,12 +93,3 @@ class HueLight:
             time.sleep(0.5)
 
         self.reset()
-
-
-
-
-
-
-
-
-#

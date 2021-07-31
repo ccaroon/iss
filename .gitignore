@@ -1,6 +1,4 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.pyc
-*.log
 .vscode/
-output.json

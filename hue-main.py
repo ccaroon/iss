@@ -2,6 +2,7 @@
 import time
 import random
 # TODO: update to use rest_client
+import os
 import requests
 import yaml
 
@@ -39,14 +40,19 @@ def iss_overhead(hue_light, places, simulate=False):
 
             # Report results
             if curr_place:
-                being_controlled = True
+                if being_controlled == False:
+                    being_controlled = True
+                    light.reload()
+                    light.brightness(75)
+
                 light.color(curr_place['color'])
                 log("The ISS is over %s right now." % (curr_place['name']))
             else:
                 # if we control light, then reset to original state/color
                 if being_controlled:
-                    light.reset()
                     being_controlled = False
+                    light.reset()
+
                 log("The ISS is NOT overhead right now.")
                 log("https://www.google.com/maps/search/%f,+%f/@%f,%f,4z" % (iss[0], iss[1], iss[0] ,iss[1]))
         else:
@@ -61,13 +67,11 @@ if __name__ == "__main__":
     log("--==> BEGIN <==--")
 
     config = None
-    with open('./conf/config.yml', 'r') as secrets:
-        config = yaml.safe_load(secrets)
+    with open(F"{os.getenv('HOME')}/.config/iss-hue.yml", 'r') as cfile:
+        config = yaml.safe_load(cfile)
 
     hue = HueBridge(config['host'], config['token'])
     light = hue.get_light('Couch Light')
-
-    # light.blink((0,255,255), count=2)
 
     durham = GPSArea.from_file("./data/durham.coords", reverse=True)
     nc     = GPSArea.from_file("./data/nc.coords", reverse=True)

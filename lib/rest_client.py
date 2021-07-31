@@ -26,20 +26,22 @@ class RestClient:
     @classmethod
     def error(cls, response, as_exception=True):
         """Parse out the error message from the given response if any"""
+        all_msgs = []
 
         data = response.json()
         for result in data:
             error_msg = None
             if 'error' in result:
                 error = result['error']
-                print(result)
                 error_msg = F"Status Code: [{response.status_code}] | Reason: [{response.reason}]"
                 error_msg += F" | Description: [{error.get('description', '?????')}]"
 
                 if as_exception:
                     raise Exception(error_msg)
+                else:
+                    all_msgs.append(error_msg)
 
-        return (error_msg)
+        return ('\n'.join(all_msgs))
 
     # Define instance methods here
     class __Instance:

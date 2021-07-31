@@ -13,7 +13,7 @@ LOG_LEVEL=1
 # ------------------------------------------------------------------------------
 def log(msg, level=1):
     if level <= LOG_LEVEL:
-        print(msg)
+        print(F"ISS - ({level}) {msg}")
 # ------------------------------------------------------------------------------
 def iss_overhead(hue_light, places, simulate=False):
     being_controlled = False

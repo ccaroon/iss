@@ -8,15 +8,11 @@ import yaml
 from lib.hue_bridge import HueBridge
 from lib.gps_area import GPSArea
 # ------------------------------------------------------------------------------
-PRINT=True
-LOG_FILE = "iss.log"
+LOG_LEVEL=1
 # ------------------------------------------------------------------------------
-def log(msg):
-    if PRINT:
+def log(msg, level=1):
+    if level <= LOG_LEVEL:
         print(msg)
-
-    with open(LOG_FILE, "a") as file:
-        file.write("%d - %s\n" % (time.time(), msg))
 # ------------------------------------------------------------------------------
 def iss_overhead(hue_light, places, simulate=False):
     being_controlled = False
@@ -37,7 +33,7 @@ def iss_overhead(hue_light, places, simulate=False):
                 curr_place = random.choice(all_places)
             else:
                 for place in places:
-                    log("Checking '%s' [%s]" % (place['name'], place['color']))
+                    log("Checking '%s' [%s]" % (place['name'], place['color']), 3)
                     if place['area'].contains(iss):
                         curr_place = place
 
@@ -65,7 +61,7 @@ if __name__ == "__main__":
     log("--==> BEGIN <==--")
 
     config = None
-    with open('.secrets.yml', 'r') as secrets:
+    with open('./conf/config.yml', 'r') as secrets:
         config = yaml.safe_load(secrets)
 
     hue = HueBridge(config['host'], config['token'])

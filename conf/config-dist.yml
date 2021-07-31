@@ -1,0 +1,4 @@
+---
+host: http://<HUB_BRIDGE_HOST>
+token: 0xdeadbeef
+

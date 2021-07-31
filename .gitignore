@@ -3,6 +3,4 @@ __pycache__/
 *.pyc
 *.log
 .vscode/
-.secrets.yml
 output.json
-.python-version

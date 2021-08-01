@@ -24,12 +24,12 @@ def track_iss(light, blynk, places, simulate=False):
     all_places = list(places)
     all_places.append(None)
 
+    last_place = None
     while (True):
         log("-----------------------------------------------------------------")
 
         # Get ISS position
         iss_location = None
-        last_place = None
         err_msg = None
         try:
             resp = requests.get("http://api.open-notify.org/iss-now.json")

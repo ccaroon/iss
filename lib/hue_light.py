@@ -41,12 +41,10 @@ class HueLight:
         """ Get/Set Color """
 
         if rgb:
-            if not self.on():
-                self.on(True)
-
             xy = self.CONVERTER.rgb_to_xy(rgb[0], rgb[1], rgb[2])
             resp = self.__client.put(F"/lights/{self.id}/state", {
-                'xy': xy
+                'xy': xy,
+                'on': True
             })
 
             RestClient.error(resp)
@@ -62,7 +60,8 @@ class HueLight:
             # translate percent to value between 0 & 254
             bri_value = int(254 * (percent/100))
             resp = self.__client.put(F"/lights/{self.id}/state", {
-                'bri': bri_value
+                'bri': bri_value,
+                'on': True
             })
 
             RestClient.error(resp)

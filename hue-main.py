@@ -1,9 +1,10 @@
 #!/usr/bin/env python
-import time
-import random
-# TODO: update to use rest_client
 import os
+import random
+# TODO: update to use rest_client instead of requests directly
 import requests
+import sys
+import time
 import yaml
 
 from lib.hue_bridge import HueBridge
@@ -15,27 +16,41 @@ def log(msg, level=1):
     if level <= LOG_LEVEL:
         print(F"ISS - ({level}) {msg}")
 # ------------------------------------------------------------------------------
-def iss_overhead(hue_light, places, simulate=False):
+def iss_overhead(light, places, simulate=False):
     being_controlled = False
     # For simulate
     all_places = list(places)
     all_places.append(None)
 
     while (True):
-        log("-------------------------")
+        log("-----------------------------------------------------------------")
+
         # Get ISS position
-        resp = requests.get("http://api.open-notify.org/iss-now.json")
-        if resp.status_code == 200:
-            data = resp.json()
-            iss = (float(data['iss_position']['latitude']), float(data['iss_position']['longitude']))
+        iss_location = None
+        err_msg = None
+        try:
+            resp = requests.get("http://api.open-notify.org/iss-now.json")
+
+            if resp.status_code == 200:
+                data = resp.json()
+                iss_location = (
+                    float(data['iss_position']['latitude']),
+                    float(data['iss_position']['longitude'])
+                )
+            else:
+                err_msg = F"{resp.status_code} - {resp.text}"
+        except Exception as e:
+            err_msg = F"{e}"
+
+        if iss_location is not None:
             # Check list of places
             curr_place = None
             if simulate:
                 curr_place = random.choice(all_places)
             else:
                 for place in places:
-                    log("Checking '%s' [%s]" % (place['name'], place['color']), 3)
-                    if place['area'].contains(iss):
+                    log(F"Checking '{place['name']}' [{place['color']}]", 3)
+                    if place['area'].contains(iss_location):
                         curr_place = place
 
             # Report results
@@ -46,7 +61,7 @@ def iss_overhead(hue_light, places, simulate=False):
                     light.brightness(75)
 
                 light.color(curr_place['color'])
-                log("The ISS is over %s right now." % (curr_place['name']))
+                log(F"The ISS is over {curr_place['name']} right now.")
             else:
                 # if we control light, then reset to original state/color
                 if being_controlled:
@@ -54,12 +69,10 @@ def iss_overhead(hue_light, places, simulate=False):
                     light.reset()
 
                 log("The ISS is NOT overhead right now.")
-                log("https://www.google.com/maps/search/%f,+%f/@%f,%f,4z" % (iss[0], iss[1], iss[0] ,iss[1]))
+                log(F"https://www.google.com/maps/search/{iss_location[0]},+{iss_location[1]}/@{iss_location[0]},{iss_location[1]},4z")
         else:
-            light.color((16,0,0))
-            log("Error Getting ISS Location: %s" % (resp.status_code))
+            log(F"Error: Unable to get ISS location: {err_msg}")
 
-        log("-------------------------")
         time.sleep(10)
 
 # ------------------------------------------------------------------------------
@@ -85,8 +98,15 @@ if __name__ == "__main__":
             {'name': "Durham",         'color': (0,255,0),     'area': durham}
         ), simulate=False)
     except Exception as e:
-        log("Error: %s" % (e))
-        light.color((255,0,0))
+        log(F"Error: {e}")
+        light.color((64,0,0))
+        time.sleep(30)
+        light.reset()
+        log("--==> END <==--")
+        sys.exit(1)
+
+
+
 
 
 

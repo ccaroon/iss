@@ -1,0 +1,13 @@
+[Unit]
+Description=ISS for Philips Hue
+
+[Service]
+User=iota
+WorkingDirectory=/home/iota/iss
+ExecStart=/home/iota/.pyenv/versions/iss/bin/python /home/iota/iss/hue-main.py
+Environment=PYTHONUNBUFFERED=1
+Environment=PYENV_VERSION=iss
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

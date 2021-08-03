@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import blynklib
 import os
 import random
 # TODO: update to use rest_client instead of requests directly
@@ -10,18 +11,20 @@ import yaml
 from lib.hue_bridge import HueBridge
 from lib.gps_area import GPSArea
 # ------------------------------------------------------------------------------
+BLYNK_LOCATION_VPIN=1
 LOG_LEVEL=1
 # ------------------------------------------------------------------------------
 def log(msg, level=1):
     if level <= LOG_LEVEL:
         print(F"ISS - ({level}) {msg}")
 # ------------------------------------------------------------------------------
-def iss_overhead(light, places, simulate=False):
+def track_iss(light, blynk, places, simulate=False):
     being_controlled = False
     # For simulate
     all_places = list(places)
     all_places.append(None)
 
+    last_place = None
     while (True):
         log("-----------------------------------------------------------------")
 
@@ -43,6 +46,14 @@ def iss_overhead(light, places, simulate=False):
             err_msg = F"{e}"
 
         if iss_location is not None:
+
+            blynk.run()
+            blynk.virtual_write(BLYNK_LOCATION_VPIN, 0,
+                iss_location[0],
+                iss_location[1],
+                "ISS"
+            )
+
             # Check list of places
             curr_place = None
             if simulate:
@@ -60,6 +71,10 @@ def iss_overhead(light, places, simulate=False):
                     light.reload()
                     light.brightness(75)
 
+                if curr_place != last_place:
+                    last_place = curr_place
+                    blynk.notify(F"The ISS is over {curr_place['name']} right now.")
+
                 light.color(curr_place['color'])
                 log(F"The ISS is over {curr_place['name']} right now.")
             else:
@@ -67,6 +82,7 @@ def iss_overhead(light, places, simulate=False):
                 if being_controlled:
                     being_controlled = False
                     light.reset()
+                    last_place = None
 
                 log("The ISS is NOT overhead right now.")
                 log(F"https://www.google.com/maps/search/{iss_location[0]},+{iss_location[1]}/@{iss_location[0]},{iss_location[1]},4z")
@@ -74,7 +90,6 @@ def iss_overhead(light, places, simulate=False):
             log(F"Error: Unable to get ISS location: {err_msg}")
 
         time.sleep(10)
-
 # ------------------------------------------------------------------------------
 if __name__ == "__main__":
     log("--==> BEGIN <==--")
@@ -83,8 +98,13 @@ if __name__ == "__main__":
     with open(F"{os.getenv('HOME')}/.config/iss-hue.yml", 'r') as cfile:
         config = yaml.safe_load(cfile)
 
-    hue = HueBridge(config['host'], config['token'])
-    light = hue.get_light('Couch Light')
+    blynk_cfg = config.get('blynk', {})
+    blynk = blynklib.Blynk(blynk_cfg['token'])
+    blynk.run()
+
+    hue_cfg = config.get('hue', {})
+    hue = HueBridge(hue_cfg['host'], hue_cfg['token'])
+    light = hue.get_light(hue_cfg['light'])
 
     durham = GPSArea.from_file("./data/durham.coords", reverse=True)
     nc     = GPSArea.from_file("./data/nc.coords", reverse=True)
@@ -92,13 +112,21 @@ if __name__ == "__main__":
 
     try:
         # List of places should be largest to smallest area size-wise in the list
-        iss_overhead(light, (
-            {'name': "The USA",        'color': (128,128,128), 'area': usa},
-            {'name': "North Carolina", 'color': (0,0,255),     'area': nc},
-            {'name': "Durham",         'color': (0,255,0),     'area': durham}
-        ), simulate=False)
+        # TODO: create some sort of Handler ABC class, then have a HueHandler
+        # and BlynkHandler, etc.
+        # Then this method gets passed a list of Handlers
+        track_iss(light, blynk,
+            (
+                {'name': "The USA",        'color': (128,128,128), 'area': usa},
+                {'name': "North Carolina", 'color': (0,0,255),     'area': nc},
+                {'name': "Durham",         'color': (0,255,0),     'area': durham}
+            ),
+            simulate=False
+        )
     except Exception as e:
         log(F"Error: {e}")
+        blynk.notify(F"ISS Error: {e}")
+
         light.color((64,0,0))
         time.sleep(30)
         light.reset()

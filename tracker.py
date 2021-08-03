@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import blynklib
 import os
 import random
 # TODO: update to use rest_client instead of requests directly
@@ -8,21 +7,18 @@ import sys
 import time
 import yaml
 
-from lib.hue_bridge import HueBridge
+from lib.blynk_handler import BlynkHandler
+from lib.hue_handler import HueHandler
 from lib.gps_area import GPSArea
 # ------------------------------------------------------------------------------
-BLYNK_LOCATION_VPIN=1
 LOG_LEVEL=1
 # ------------------------------------------------------------------------------
 def log(msg, level=1):
     if level <= LOG_LEVEL:
         print(F"ISS - ({level}) {msg}")
 # ------------------------------------------------------------------------------
-def track_iss(light, blynk, places, simulate=False):
+def track_iss(places, handlers):
     being_controlled = False
-    # For simulate
-    all_places = list(places)
-    all_places.append(None)
 
     last_place = None
     while (True):
@@ -46,44 +42,22 @@ def track_iss(light, blynk, places, simulate=False):
             err_msg = F"{e}"
 
         if iss_location is not None:
-
-            blynk.run()
-            blynk.virtual_write(BLYNK_LOCATION_VPIN, 0,
-                iss_location[0],
-                iss_location[1],
-                "ISS"
-            )
+            for handler in handlers:
+                handler.location(iss_location)
 
             # Check list of places
-            curr_place = None
-            if simulate:
-                curr_place = random.choice(all_places)
+            known_place = None
+            for place in places:
+                log(F"Checking '{place['name']}' [{place['color']}]", 3)
+                if place['area'].contains(iss_location):
+                    known_place = place
+
+            for handler in handlers:
+                handler.known_place(known_place)
+
+            if known_place:
+                log(F"The ISS is over {known_place['name']} right now.")
             else:
-                for place in places:
-                    log(F"Checking '{place['name']}' [{place['color']}]", 3)
-                    if place['area'].contains(iss_location):
-                        curr_place = place
-
-            # Report results
-            if curr_place:
-                if being_controlled == False:
-                    being_controlled = True
-                    light.reload()
-                    light.brightness(75)
-
-                if curr_place != last_place:
-                    last_place = curr_place
-                    blynk.notify(F"The ISS is over {curr_place['name']} right now.")
-
-                light.color(curr_place['color'])
-                log(F"The ISS is over {curr_place['name']} right now.")
-            else:
-                # if we control light, then reset to original state/color
-                if being_controlled:
-                    being_controlled = False
-                    light.reset()
-                    last_place = None
-
                 log("The ISS is NOT overhead right now.")
                 log(F"https://www.google.com/maps/search/{iss_location[0]},+{iss_location[1]}/@{iss_location[0]},{iss_location[1]},4z")
         else:
@@ -93,18 +67,19 @@ def track_iss(light, blynk, places, simulate=False):
 # ------------------------------------------------------------------------------
 if __name__ == "__main__":
     log("--==> BEGIN <==--")
+    handlers = []
 
     config = None
     with open(F"{os.getenv('HOME')}/.config/iss-hue.yml", 'r') as cfile:
         config = yaml.safe_load(cfile)
 
     blynk_cfg = config.get('blynk', {})
-    blynk = blynklib.Blynk(blynk_cfg['token'])
-    blynk.run()
+    blynk_map = BlynkHandler('BlynkMap', blynk_cfg)
+    handlers.append(blynk_map)
 
-    hue_cfg = config.get('hue', {})
-    hue = HueBridge(hue_cfg['host'], hue_cfg['token'])
-    light = hue.get_light(hue_cfg['light'])
+    # hue_cfg = config.get('hue', {})
+    # hue_handler = HueHandler('CD1', hue_cfg)
+    # handlers.append(hue_handler)
 
     durham = GPSArea.from_file("./data/durham.coords", reverse=True)
     nc     = GPSArea.from_file("./data/nc.coords", reverse=True)
@@ -112,24 +87,19 @@ if __name__ == "__main__":
 
     try:
         # List of places should be largest to smallest area size-wise in the list
-        # TODO: create some sort of Handler ABC class, then have a HueHandler
-        # and BlynkHandler, etc.
-        # Then this method gets passed a list of Handlers
-        track_iss(light, blynk,
+        track_iss(
             (
                 {'name': "The USA",        'color': (128,128,128), 'area': usa},
                 {'name': "North Carolina", 'color': (0,0,255),     'area': nc},
                 {'name': "Durham",         'color': (0,255,0),     'area': durham}
             ),
-            simulate=False
+            handlers
         )
     except Exception as e:
-        log(F"Error: {e}")
-        blynk.notify(F"ISS Error: {e}")
+        for handler in handlers:
+            handler.error(F"ISS Error: {e}")
 
-        light.color((64,0,0))
-        time.sleep(30)
-        light.reset()
+        log(F"Error: {e}")
         log("--==> END <==--")
         sys.exit(1)
 

@@ -18,9 +18,6 @@ def log(msg, level=1):
         print(F"ISS - ({level}) {msg}")
 # ------------------------------------------------------------------------------
 def track_iss(places, handlers):
-    being_controlled = False
-
-    last_place = None
     while (True):
         log("-----------------------------------------------------------------")
 
@@ -77,9 +74,9 @@ if __name__ == "__main__":
     blynk_map = BlynkHandler('BlynkMap', blynk_cfg)
     handlers.append(blynk_map)
 
-    # hue_cfg = config.get('hue', {})
-    # hue_handler = HueHandler('CD1', hue_cfg)
-    # handlers.append(hue_handler)
+    hue_cfg = config.get('hue', {})
+    hue_handler = HueHandler(hue_cfg['light'], hue_cfg)
+    handlers.append(hue_handler)
 
     durham = GPSArea.from_file("./data/durham.coords", reverse=True)
     nc     = GPSArea.from_file("./data/nc.coords", reverse=True)

@@ -21,9 +21,9 @@ class BlynkHandler(LocationHandler):
             "ISS"
         )
 
-    # Blynk does not care if the ISS is over a known place
     def known_place(self, place):
-        pass
+        if place is not None:
+            self.__blynk.notify(F"The ISS is over {place['name']} right now.")
 
     def error(self, err_msg):
         self.__blynk.notify(err_msg)

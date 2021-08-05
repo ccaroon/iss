@@ -10,6 +10,7 @@ class BlynkHandler(LocationHandler):
 
         self.__blynk = blynklib.Blynk(config['token'])
         self.__blynk.run()
+        self.__last_place = None
 
     def location(self, long_lat):
         self.__blynk.run()
@@ -23,7 +24,11 @@ class BlynkHandler(LocationHandler):
 
     def known_place(self, place):
         if place is not None:
-            self.__blynk.notify(F"The ISS is over {place['name']} right now.")
+            if place != self.__last_place:
+                self.__last_place = place
+                self.__blynk.notify(F"The ISS is currently over {place['name']}.")
+        else:
+            self.__last_place = None
 
     def error(self, err_msg):
         self.__blynk.notify(err_msg)

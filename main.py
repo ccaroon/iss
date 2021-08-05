@@ -11,7 +11,7 @@ if __name__ == "__main__":
     handlers = []
 
     config = None
-    with open(F"{os.getenv('HOME')}/.config/iss-hue.yml", 'r') as cfile:
+    with open(F"{os.getenv('HOME')}/.config/iss-tracker.yml", 'r') as cfile:
         config = yaml.safe_load(cfile)
 
     blynk_cfg = config.get('blynk', {})

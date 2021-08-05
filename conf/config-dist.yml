@@ -1,4 +1,4 @@
-# Copy to $HOME/.config/iss-hue.yml and set the values below
+# Copy to $HOME/.config/iss-tracker.yml and set the values below
 ---
 name: TrackerName
 hue:

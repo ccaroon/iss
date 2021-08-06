@@ -21,6 +21,8 @@ class Tracker:
 
     def update(self):
         err_msg = None
+        iss_location = None
+
         try:
             iss_location = self.__iss.get_location()
         except Exception as e:

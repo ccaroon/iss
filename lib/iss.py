@@ -2,10 +2,11 @@ from lib.rest_client import RestClient
 
 class ISS:
     def __init__(self):
-        self.client = RestClient.new_instance(
+        self.client = RestClient(
             '',
             { 'host': 'http://api.open-notify.org' }
         )
+        # self.client.debug(True)
 
     def get_location(self):
         location = None
@@ -17,7 +18,6 @@ class ISS:
                 float(data['iss_position']['latitude']),
                 float(data['iss_position']['longitude'])
             )
-        else:
-            raise Exception(F"{resp.status_code} - {resp.text}")
+
 
         return location

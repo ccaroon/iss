@@ -1,127 +1,100 @@
 import requests
-# import urllib3
-# urllib3.disable_warnings()
 
-# Singleton class
 class RestClient:
-    """A singleton class that encapsulates making RESTful calls"""
+    """A class that encapsulates making RESTful calls"""
 
-    __instance = None
+    def __init__(self, api, config, err_handler=None):
+        self.api = api
 
-    # Singleton handling stuff
-    def __init__(self, api=None, config=None):
-        if not RestClient.__instance:
-            if api == None or config == None:
-                raise ValueError("'api' and 'config' are required to instantiate a new instance.")
-            else:
-                RestClient.__instance = RestClient.new_instance(api, config)
+        self.host = config.get('host', None)
+        self._custom_headers = config.get('headers', {})
 
-    def __getattr__(self, name):
-        return getattr(RestClient.__instance, name)
+        self.__error_handler = err_handler
 
-    @classmethod
-    def new_instance(cls, api, config):
-        return RestClient.__Instance(api, config)
+        self.__debug = False
 
-    @classmethod
-    def error(cls, response, as_exception=True):
-        """Parse out the error message from the given response if any"""
-        all_msgs = []
+    def debug(self, on_off=True):
+        self.__debug = on_off
 
-        data = response.json()
-        for result in data:
-            error_msg = None
-            if 'error' in result:
-                error = result['error']
-                error_msg = F"Status Code: [{response.status_code}] | Reason: [{response.reason}]"
-                error_msg += F" | Description: [{error.get('description', '?????')}]"
+    def base_url(self):
+        return F"{self.host}{self.api}"
 
-                if as_exception:
-                    raise Exception(error_msg)
-                else:
-                    all_msgs.append(error_msg)
+    def get(self, url, qs=None):
+        full_url = F"{self.base_url()}{url}"
 
-        return ('\n'.join(all_msgs))
+        if self.__debug:
+            self.__debug_print_req("GET", F"{full_url}?{qs}", self.__headers(), "")
 
-    # Define instance methods here
-    class __Instance:
-        DEBUG = False
+        try:
+            resp = requests.get(full_url, auth=self.__auth(), headers=self.__headers(), verify=False, params=qs)
+            self.check_error(resp)
+            return resp
+        except Exception as e:
+            return e
 
-        def __init__(self, api, config):
-            self.api = api
+    def post(self, url, body={}):
+        full_url = F"{self.base_url()}{url}"
 
-            self.host = config.get('host', None)
-            self._custom_headers = config.get('headers', {})
+        if self.__debug:
+            self.__debug_print_req("POST", full_url, self.__headers(), body)
 
-        def __str__(self):
-            if (hasattr(self, 'username')):
-                str = "%s@%s/%s" % (self.username,self.host,self.api)
-            else:
-                str = "%s@%s/%s" % (self.token,self.host,self.api)
+        resp = requests.post(full_url, json=body, auth=self.__auth(), headers=self.__headers(), verify=False)
+        self.check_error(resp)
+        return(resp)
 
-            return str
+    def put(self, url, body={}):
+        full_url = F"{self.base_url()}{url}"
 
-        def debug(self, on_off=True):
-            self.DEBUG = on_off
+        if self.__debug:
+            self.__debug_print_req("PUT", full_url, self.__headers(), body)
 
-        def base_url(self):
-            return "{0}{1}".format(self.host, self.api)
+        resp = requests.put(full_url, json=body, headers=self.__headers())
+        self.check_error(resp)
+        return(resp)
 
-        def get(self, url, qs=None):
-            full_url = "{0}{1}".format(self.base_url(), url)
+    def delete(self, url, qs=None):
+        full_url = F"{self.base_url()}{url}"
 
-            if self.DEBUG:
-                self.__debug_print_req("GET", "%s?%s" % (full_url,qs), self.__headers(), "")
+        if self.__debug:
+            self.__debug_print_req("DELETE", F"{full_url}?{qs}", self.__headers(), "")
 
-            try:
-                resp = requests.get(full_url, auth=self.__auth(), headers=self.__headers(), verify=False, params=qs)
-                return resp
-            except Exception as e:
-                return e
+        resp = requests.delete(full_url, auth=self.__auth(), headers=self.__headers(), verify=False, params=qs)
+        self.check_error(resp)
+        return(resp)
 
-        def post(self, url, body={}):
-            full_url = "{0}{1}".format(self.base_url(), url)
+    def update_headers(self, headers):
+        self._custom_headers = headers
 
-            if self.DEBUG:
-                self.__debug_print_req("POST", full_url, self.__headers(), body)
+    def check_error(self, response):
+        if self.__error_handler:
+            self.__error_handler(response)
+        else:
+            if response.status_code >= 400:
+                raise Exception(F"{response.status_code} - {response.reason} [{response.text}]")
 
-            resp = requests.post(full_url, json=body, auth=self.__auth(), headers=self.__headers(), verify=False)
-            return(resp)
+    def __debug_print_req(self, method, url, headers, body):
+        print(F"{method} {url}\n{headers}\n{body}")
 
-        def put(self, url, body={}):
-            full_url = "{0}{1}".format(self.base_url(), url)
+    def __auth(self):
+        auth = None
+        if (hasattr(self, 'username')):
+            auth = (self.username, self.password)
 
-            if self.DEBUG:
-                self.__debug_print_req("PUT", full_url, self.__headers(), body)
+        return (auth)
 
-            resp = requests.put(full_url, json=body, headers=self.__headers())
-            return(resp)
+    def __headers(self):
+        headers = {}
+        if (hasattr(self, '_custom_headers')):
+            headers = self._custom_headers
 
-        def delete(self, url, qs=None):
-            full_url = "{0}{1}".format(self.base_url(), url)
+        return (headers)
 
-            if self.DEBUG:
-                self.__debug_print_req("DELETE", "%s?%s" % (full_url,qs), self.__headers(), "")
+    def __str__(self):
+        if (hasattr(self, 'username')):
+            str = F"{self.username}@{self.host}/{self.api}"
+        else:
+            str = F"{self.host}/{self.api}"
 
-            resp = requests.delete(full_url, auth=self.__auth(), headers=self.__headers(), verify=False, params=qs)
-            return(resp)
+        return str
 
-        def update_headers(self, headers):
-            self._custom_headers = headers
-
-        def __debug_print_req(self, method, url, headers, body):
-            print("%s %s\n%s\n%s" % (method, url, headers, body))
-
-        def __auth(self):
-            auth = None
-            if (hasattr(self, 'username')):
-                auth = (self.username, self.password)
-
-            return (auth)
-
-        def __headers(self):
-            headers = {}
-            if (hasattr(self, '_custom_headers')):
-                headers = self._custom_headers
-
-            return (headers)
+    # --------------------------------------------------------------------------

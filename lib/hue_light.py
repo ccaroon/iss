@@ -26,7 +26,6 @@ class HueLight:
     def reload(self):
         """ Reload the lights state """
         resp = self.__client.get(F"/lights/{self.id}")
-        RestClient.error(resp)
 
         self.data = resp.json()
         self.__set_initial_state()
@@ -34,7 +33,6 @@ class HueLight:
     def reset(self):
         """ Reset the light to it's inital state """
         resp = self.__client.put(F"/lights/{self.id}/state", self.initial_state)
-        RestClient.error(resp)
         self.data['state'] = self.initial_state
 
     def color(self, rgb = None):
@@ -47,7 +45,6 @@ class HueLight:
                 'on': True
             })
 
-            RestClient.error(resp)
             self.data['state']['xy'] = xy
         else:
             xy = self.data['state']['xy']
@@ -64,7 +61,6 @@ class HueLight:
                 'on': True
             })
 
-            RestClient.error(resp)
             self.data['state']['bri'] = bri_value
         else:
             return self.data['state']['bri']
@@ -76,7 +72,6 @@ class HueLight:
                 'on': value
             })
 
-            RestClient.error(resp)
             self.data['state']['on'] = value
         else:
             return self.data['state']['on']

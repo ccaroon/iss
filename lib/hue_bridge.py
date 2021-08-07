@@ -5,7 +5,7 @@ class HueBridge:
     def __init__(self, host, token):
         self.__host = host
         self.__token = token
-        self.client = RestClient(F'/api/{token}', {
+        self.client = RestClient.new_instance(F'/api/{token}', {
             'host': host
         })
         # self.client.debug(True)

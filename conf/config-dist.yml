@@ -1,6 +1,8 @@
-# Copy to $HOME/.config/iss-hue.yml and set the values below
+# Copy to $HOME/.config/iss-tracker.yml and set the values below
 ---
+name: TrackerName
 hue:
+  light: MyColorLight
   host: http://<HUB_BRIDGE_HOST>
   token: 0xdeadbeef
 blynk:

@@ -1,10 +1,10 @@
 [Unit]
-Description=ISS for Philips Hue
+Description=ISS Tracker
 
 [Service]
 User=iota
 WorkingDirectory=/home/iota/iss
-ExecStart=/home/iota/.pyenv/versions/iss/bin/python /home/iota/iss/hue-main.py
+ExecStart=/home/iota/.pyenv/versions/iss/bin/python /home/iota/iss/main.py
 Environment=PYTHONUNBUFFERED=1
 Environment=PYENV_VERSION=iss
 Restart=on-failure

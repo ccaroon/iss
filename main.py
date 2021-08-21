@@ -19,8 +19,9 @@ if __name__ == "__main__":
     handlers.append(blynk_map)
 
     hue_cfg = config.get('hue', {})
-    hue_handler = HueHandler(hue_cfg['light'], hue_cfg)
-    handlers.append(hue_handler)
+    for name in hue_cfg.get('lights', []):
+        hue_handler = HueHandler(name, hue_cfg)
+        handlers.append(hue_handler)
 
     durham = GPSArea.from_file("./data/durham.coords", reverse=True)
     nc     = GPSArea.from_file("./data/nc.coords", reverse=True)

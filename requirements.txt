@@ -1,4 +1,4 @@
-rgbxy
 requests
 PyYaml
 blynklib
+git+https://github.com/ccaroon/phuey.git@master

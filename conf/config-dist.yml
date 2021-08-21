@@ -2,8 +2,10 @@
 ---
 name: TrackerName
 hue:
-  light: MyColorLight
   host: http://<HUB_BRIDGE_HOST>
   token: 0xdeadbeef
+  lights:
+    - MyColorLight1
+    - MyColorLight2
 blynk:
   token: 0xabcd123ef

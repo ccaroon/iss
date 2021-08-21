@@ -1,7 +1,7 @@
 import time
 
 from lib.location_handler import LocationHandler
-from lib.hue_bridge import HueBridge
+from phuey.hue_bridge import HueBridge
 
 class HueHandler(LocationHandler):
     def __init__(self, name, config):
@@ -11,6 +11,8 @@ class HueHandler(LocationHandler):
         self.__light = bridge.get_light(name)
         self.__active = False
         self.__last_place = None
+
+        self.__light.blink((0,255,0), 1)
 
     # Hue does not care about the location, only about if the ISS is over a
     # know place

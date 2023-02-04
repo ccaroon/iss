@@ -2,3 +2,5 @@ requests
 PyYaml
 blynklib
 git+https://github.com/ccaroon/phuey.git@master
+esptool ~= 3.2
+adafruit-ampy ~= 1.1.0

@@ -42,11 +42,11 @@ def iss_overhead(pixel, places):
         utime.sleep(6)
 
 # ------------------------------------------------------------------------------
-if __name__ == "__main__":    
+if __name__ == "__main__":
     log("--==> BEGIN <==--")
     pixel = Pixel(15)
     pixel.off()
-    
+
     # blue_led = Pin(2, Pin.OUT)
     # blue_led.off() #Actually ON
 

@@ -5,19 +5,19 @@ PORT = $(LNX_PORT)
 test:
 	echo $(PORT)
 
-install: boot main lib other data
+install: boot main libs data
 
-boot: boot.py
+boot:
 	ampy --port $(PORT) put boot.py
 
-main: main.py
+main:
 	ampy --port $(PORT) put main.py
 
-lib:
+libs:
 	ampy --port $(PORT) put ../lib/gps_area.py
-
-other:
-	ampy --port $(PORT) put pixel.py
+	ampy --port $(PORT) put lib/pixel.py
+	ampy --port $(PORT) put lib/secrets.py
+	ampy --port $(PORT) put lib/wifi.py
 
 data:
 	ampy --port $(PORT) put ../data/durham.coords

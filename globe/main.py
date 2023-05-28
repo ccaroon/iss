@@ -40,15 +40,11 @@ def iss_overhead(pixel, places):
             log("Error Getting ISS Location: %s" % (resp.status_code))
 
         utime.sleep(6)
-
 # ------------------------------------------------------------------------------
-if __name__ == "__main__":
+def iss_main():
     log("--==> BEGIN <==--")
     pixel = Pixel(15)
     pixel.off()
-
-    # blue_led = Pin(2, Pin.OUT)
-    # blue_led.off() #Actually ON
 
     durham = GPSArea.from_file("./durham.coords", reverse=True)
     nc     = GPSArea.from_file("./nc.coords", reverse=True)
@@ -65,6 +61,21 @@ if __name__ == "__main__":
         print("Error: %s" % (e))
         log("Error: %s" % (e))
         pixel.color((64,0,0))
+# ------------------------------------------------------------------------------
+def craig():
+    pixel = Pixel(15)
+    pixel.white(255)
+# ------------------------------------------------------------------------------
+if __name__ == "__main__":
+    iss_main()
+    # craig()
+
+
+
+
+
+
+
 
 
 
